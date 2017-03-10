@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace= "userControlMapper" >
+    <select id ="select_testusers" parameterType="java.util.HashMap" resultType= "java.util.HashMap">
+        select *
+        from test_users
+       
+    </select >
+    
+    <insert id ="insert_testusers" parameterType="java.util.HashMap" >
+        INSERT INTO test_users
+        (id, name)
+        VALUES
+        ( #{id}, #{name} )
+    </insert>
+    
+    <insert id ="insert_user" parameterType="java.util.HashMap" >
+        INSERT INTO USER
+        (id, passwd, name, road_name_address, detail_address, lot_number, post_code, phone, email, joinpath, interests, image)
+        VALUES
+        ( #{id}, #{passwd}, #{name}, #{road_name_address}, #{detail_address}, #{lot_number}, #{post_code}, #{phone}, #{email}, #{joinpath}, #{interests}, #{image} )
+    </insert>
+    
+    <select id ="check_userid" parameterType="java.util.HashMap" resultType= "java.util.HashMap">
+        SELECT COUNT(*)
+        FROM USER
+        WHERE id = #{id}
+    </select>
+    
+    <select id ="check_login" parameterType="java.util.HashMap" resultType= "java.util.HashMap">
+        SELECT COUNT(*)
+        FROM USER
+        WHERE id = #{id} AND passwd = #{passwd}
+    </select>
+    
+</mapper>
