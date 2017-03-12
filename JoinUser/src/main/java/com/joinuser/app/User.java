@@ -1,9 +1,12 @@
 package com.joinuser.app;
 
+import java.util.List;
+
 import org.springframework.web.multipart.MultipartFile;
 
 public class User {
-	private MultipartFile image;
+	//private MultipartFile image;
+	private List<MultipartFile> files;
 	private String id;
 	private String name;
 	private String road_name_address;
@@ -18,11 +21,17 @@ public class User {
 	private String interests;
 	private String captcha_response;
 	
-	public MultipartFile getImage() {
+	/*public MultipartFile getImage() {
 		return image;
 	}
 	public void setImage(MultipartFile image) {
 		this.image = image;
+	}*/
+	public List<MultipartFile> getFiles() {
+		return files;
+	}
+	public void setFiles(List<MultipartFile> files) {
+		this.files = files;
 	}
 	public String getId() {
 		return id;

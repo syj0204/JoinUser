@@ -10,6 +10,7 @@
 <script src='${pageContext.request.contextPath}/resources/js/api.js'></script>
 <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/bootstrap.min.css">
 <script src="${pageContext.request.contextPath}/resources/js/bootstrap.min.js"></script>
+<script src="${pageContext.request.contextPath}/resources/js/jQuery.Multiple.min.js"></script>
 
 <script type="text/javascript">
 
@@ -71,10 +72,15 @@ function compare_password() {
 	}
 }
 
+function remove(li) {
+	var index = li.parentElement.index();
+	alert(index);
+}
 
 $(function(){
 	
 	var email_auth_code = "";
+	var file_values = [];
 	
 	$("#id").change(function() {
 		var id = $("#id").val();
@@ -145,7 +151,6 @@ $(function(){
 	});
 	
 	$("#email").change(function() {
-		//var check = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
 		var check = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i;
 		var email = $("#email").val();
 		
@@ -210,7 +215,6 @@ $(function(){
 			$("#email_auth_input").show();
 			$("#email_error").text("");
 			$("#email_auth_verify_success").show();
-			
 		}
 		else {
 			alert("fail!");
@@ -230,15 +234,6 @@ $(function(){
 		}
 		
 		if(inputerror_check_result == 1) {
-			var image = $('#image').val();
-			var name = $('#name').val();
-			var road_name_address = $('#road_name_address').val();
-			var detail_address = $('#detail_address').val();
-			var lot_number = $('#lot_number').val();
-			var post_code = $('#post_code').val();
-			var phone = $('#phone').val();
-			var email = $('#email').val();
-			var joinpath = $(".rdclass :checked").val();
 			var interests = [];
 			$('#captcha_response').val(document.getElementById("g-recaptcha-response").value);
 					
@@ -248,6 +243,14 @@ $(function(){
 			$("#join_form").submit();
 		} else {
 			alert("필수 입력항목을 모두 입력해 주세요!!");
+		}
+	});
+	$("#files").change(function(e) {
+		var files = $("#files")[0].files;
+
+		for (var i = 0; i < files.length; i++)
+		{
+		 alert(files[i].name);
 		}
 	});
 });
@@ -281,9 +284,9 @@ fieldset { border:none; }
    <tr>
      <td style="text-align:center; vertical-align:middle;">사진</td>
      <td>
-     	<img id="image_output" width="100" height="100"/>
-	     <input id="image" type="file" name="image" accept=".gif, .jpg, .png"
-	     onchange="document.getElementById('image_output').src = window.URL.createObjectURL(this.files[0])" /><br />
+     	<input id="files" name="files" type="file" multiple="multiple" />
+	    <!--<input id="files" type="file" class="multifile" multiple="multiple" />
+	      <div id="file_list" style="border:2px solid #c9c9c9;min-height:50px; width:60%;"></div>-->
      </td>
     </tr>
     <tr>

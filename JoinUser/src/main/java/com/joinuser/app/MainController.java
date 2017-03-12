@@ -2,6 +2,7 @@ package com.joinuser.app;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -21,6 +22,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -32,9 +35,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.util.StringUtils;
 
 import com.joinuser.app.CaptchaVerify;
 import com.joinuser.app.User;
+//import com.mysql.jdbc.StringUtils;
 
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
@@ -65,7 +70,6 @@ public class MainController {
 	      MimeMessage message = mailSender.createMimeMessage();
 	      MimeMessageHelper messageHelper 
 	                        = new MimeMessageHelper(message, true, "UTF-8");
-	 
 	      messageHelper.setTo(receiver);
 	      messageHelper.setSubject(subject);
 	      messageHelper.setText(content);
@@ -88,9 +92,18 @@ public class MainController {
 	@RequestMapping(value = "/join", method = RequestMethod.POST)
 	public String join(@ModelAttribute User user, BindingResult result, Model model, HttpSession session, HttpServletRequest request) {
 		
-		MultipartFile image_file = user.getImage();
-		String image_file_name = image_file.getOriginalFilename();
-		String image = "C:\\Develop\\workspaces\\JoinUser\\src\\main\\webapp\\images\\"+image_file_name;
+		//MultipartFile image_file = user.getImage();
+		//String image_file_name = image_file.getOriginalFilename();
+		//String image = "C:\\Develop\\workspaces\\JoinUser\\src\\main\\webapp\\images\\"+image_file_name;
+		
+		if(result.hasErrors()) {
+			List<FieldError> errors = result.getFieldErrors();
+		    for (FieldError error : errors ) {
+		        System.out.println (error.getObjectName() + " - " + error.getDefaultMessage());
+		    }
+		}
+		List<MultipartFile> files = user.getFiles();
+		logger.info("files="+files.size());
 		String id = user.getId().trim();
 		String name = user.getName().trim();
 		String road_name_address = user.getRoad_name_address().trim();
@@ -123,20 +136,56 @@ public class MainController {
 		result_json = new JSONObject(verify_result);
 		logger.info("result_map="+result_json.get("success"));
 		String is_success = result_json.get("success").toString();
-		
+		// && !result.hasErrors()
 		if(is_success=="true" && !result.hasErrors()) {
-			File f = new File(image);
+			/*File f = new File(image);
 		    try {
 		    	image_file.transferTo(f);
 			} catch (IllegalStateException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
-			}
-			
+			}*/
+			List<String> all_files = new ArrayList<String>();
+		    for(int i=0; i<files.size(); i++) {
+		    	String file_name = files.get(i).getOriginalFilename();
+		    	all_files.add(file_name);
+				String file_path = "C:\\Users\\Naver\\git\\JoinUser\\JoinUser\\src\\main\\webapp\\files\\"+file_name;
+				
+				File file = new File(file_path);
+				try {
+					files.get(i).transferTo(file);
+				} catch (IllegalStateException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		    }
+		    String joined_files = String.join("/", all_files);
+		    System.out.println("joined_files: " + joined_files);
+		    String joined_filesw = StringUtils.collectionToCommaDelimitedString(all_files);
+		    System.out.println("joined_files: " + joined_filesw);
+		    
+		    
+		    SHAPasswordEncoder shaPasswordEncoder = new SHAPasswordEncoder(512);
+		    shaPasswordEncoder.setEncodeHashAsBase64(true);
+		    PasswordEncoding passwordEncoding = new PasswordEncoding(shaPasswordEncoder);
+		    
+		    System.out.println("SHA 암호화: " + passwordEncoding.encode(password1));
+		    System.out.println("SHA 비교: " + passwordEncoding.matches(password1, passwordEncoding.encode(password1)));
+		    
+		    PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+		    passwordEncoding = new PasswordEncoding(passwordEncoder);
+
+		    System.out.println("BCrypt 암호화: " + passwordEncoding.encode(password1));
+		    System.out.println("BCrypt 비교: " + passwordEncoding.matches(password1, passwordEncoding.encode(password1)));
+
 			HashMap<String, String> input = new HashMap<String, String>();
 			input.put("id", id);
-			input.put("passwd", password1);
+			//input.put("passwd", password1);
+			input.put("passwd", passwordEncoding.encode(password1));
 	        input.put("name", name);
 	        input.put("road_name_address", road_name_address);
 	        input.put("detail_address", detail_address);
@@ -146,11 +195,13 @@ public class MainController {
 	        input.put("email", email);
 	        input.put("joinpath", joinpath);
 	        input.put("interests", interests);
-	        input.put("image", image_file_name);
+	        input.put("files", interests);
+	        //input.put("image", image_file_name);
 	        
-	        int insert_result = sqlSession.insert("userControlMapper.insert_user", input);
-			if(insert_result==1) return "login";
-			else return "redirect:/join_fail";
+	        //int insert_result = sqlSession.insert("userControlMapper.insert_user", input);
+			//if(insert_result==1) return "login";
+	        return "login";
+			//else return "redirect:/join_fail";
 		} else return "redirect:/join_fail";
 	}
 	
@@ -195,6 +246,16 @@ public class MainController {
 		HashMap<String, Long> id_result = sqlSession.selectOne("userControlMapper.check_userid", input);
 			
 	    return ""+id_result.get("COUNT(*)");
+	}
+	
+	@RequestMapping(value = "/get_userlist")
+	public String get_userlist() {
+		return "abc";
+	}
+	
+	@RequestMapping(value = "/list_form")
+	public String list_form() {
+		return "list";
 	}
 
 	@RequestMapping(value = "/error404", method = RequestMethod.GET)
