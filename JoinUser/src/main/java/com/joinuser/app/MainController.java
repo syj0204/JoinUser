@@ -6,13 +6,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.session.SqlSession;
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -163,10 +169,10 @@ public class MainController {
 					e.printStackTrace();
 				}
 		    }
-		    String joined_files = String.join("/", all_files);
+		    //String joined_files = String.join("/", all_files);
+		    //System.out.println("joined_files: " + joined_files);
+		    String joined_files = StringUtils.collectionToCommaDelimitedString(all_files);
 		    System.out.println("joined_files: " + joined_files);
-		    String joined_filesw = StringUtils.collectionToCommaDelimitedString(all_files);
-		    System.out.println("joined_files: " + joined_filesw);
 		    
 		    
 		    SHAPasswordEncoder shaPasswordEncoder = new SHAPasswordEncoder(512);
@@ -195,13 +201,13 @@ public class MainController {
 	        input.put("email", email);
 	        input.put("joinpath", joinpath);
 	        input.put("interests", interests);
-	        input.put("files", interests);
+	        input.put("files", joined_files);
 	        //input.put("image", image_file_name);
 	        
-	        //int insert_result = sqlSession.insert("userControlMapper.insert_user", input);
-			//if(insert_result==1) return "login";
-	        return "login";
-			//else return "redirect:/join_fail";
+	        int insert_result = sqlSession.insert("userControlMapper.insert_user", input);
+			if(insert_result==1) return "login";
+	        //return "login";
+			else return "redirect:/join_fail";
 		} else return "redirect:/join_fail";
 	}
 	
@@ -248,10 +254,64 @@ public class MainController {
 	    return ""+id_result.get("COUNT(*)");
 	}
 	
-	@RequestMapping(value = "/get_userlist")
+	@RequestMapping(value = "/get_userlist", method = RequestMethod.POST, produces="text/plain;charset=UTF-8")
+	@ResponseBody
 	public String get_userlist() {
-		return "abc";
+		int offset = 1;
+		int limit = 5;
+		RowBounds rowBounds = new RowBounds(offset, limit);
+		List<HashMap<String, String>> user_list = sqlSession.selectList("userControlMapper.select_user");
+		//List<HashMap<String, String>> user_list = sqlSession.selectList("userControlMapper.select_user", null, rowBounds);
+		//json_object.put("usepager_list",user_list);
+		//JSONObject json = new JSONObject(user_list);
+		
+		ObjectMapper objectMapper = new ObjectMapper();
+
+		String json = "";
+		try {
+			json = objectMapper.writeValueAsString(user_list);
+		} catch (JsonGenerationException e) {
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	    return json;
 	}
+	
+	@RequestMapping(value = "/get_userinfo", method = RequestMethod.POST, produces="text/plain;charset=UTF-8")
+	@ResponseBody
+	public String get_userinfo(@RequestParam("id") String id) {
+		
+		HashMap<String, String> input = new HashMap<String, String>();
+		input.put("id", id);
+	        
+		HashMap<String, Long> result = sqlSession.selectOne("userControlMapper.select_user_detail", input);
+			
+		ObjectMapper objectMapper = new ObjectMapper();
+
+		String json = "";
+		try {
+			json = objectMapper.writeValueAsString(result);
+		} catch (JsonGenerationException e) {
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	    return json;
+	}
+	
+	/*@RequestMapping(value = "/get_userlist", produces="text/plain;charset=UTF-8")
+	public @ResponseBody List<HashMap<String, String>> get_userlist() {
+		List<HashMap<String, String>> user_list = sqlSession.selectList("userControlMapper.select_user");
+		//json_object.put("user_list",user_list);
+	    return user_list;
+	}*/
 	
 	@RequestMapping(value = "/list_form")
 	public String list_form() {

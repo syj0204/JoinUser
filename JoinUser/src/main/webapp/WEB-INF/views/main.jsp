@@ -246,11 +246,22 @@ $(function(){
 		}
 	});
 	$("#files").change(function(e) {
+		// 파일 중복 체크
+		// 파일 사이즈 체크
+		// 파일 확장자 체크
+		// 정규식으로 file full path 여부 체크
 		var files = $("#files")[0].files;
+		alert(files.length);
 
-		for (var i = 0; i < files.length; i++)
+		for (var i=0; i<files.length; i++)
 		{
-		 alert(files[i].name);
+			var file_name = files[i].name;
+			alert(file_name);
+			if(file_name.length >=20) {
+				alert("파일이름은 영문20자, 한글10자 이내여야 합니다.");
+				return false;
+			} else return true;
+		 
 		}
 	});
 });

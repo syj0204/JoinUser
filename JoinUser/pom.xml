@@ -166,6 +166,11 @@
 	        <artifactId>spring-security-config</artifactId>
 	        <version>3.2.4.RELEASE</version>
 	 	</dependency>
+	 	<dependency>
+		    <groupId>org.codehaus.jackson</groupId>
+		    <artifactId>jackson-mapper-asl</artifactId>
+		    <version>1.9.13</version>
+		</dependency>
 	</dependencies>
     <build>
         <plugins>

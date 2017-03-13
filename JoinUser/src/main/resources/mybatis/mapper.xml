@@ -17,10 +17,18 @@
     
     <insert id ="insert_user" parameterType="java.util.HashMap" >
         INSERT INTO USER
-        (id, passwd, name, road_name_address, detail_address, lot_number, post_code, phone, email, joinpath, interests, image)
+        (id, passwd, name, road_name_address, detail_address, lot_number, post_code, phone, email, joinpath, interests, files)
         VALUES
-        ( #{id}, #{passwd}, #{name}, #{road_name_address}, #{detail_address}, #{lot_number}, #{post_code}, #{phone}, #{email}, #{joinpath}, #{interests}, #{image} )
+        ( #{id}, #{passwd}, #{name}, #{road_name_address}, #{detail_address}, #{lot_number}, #{post_code}, #{phone}, #{email}, #{joinpath}, #{interests}, #{files} )
     </insert>
+    
+    <select id ="select_user" parameterType="java.util.HashMap" resultType= "java.util.HashMap">
+        SELECT * FROM USER
+    </select>
+    
+    <select id ="select_user_detail" parameterType="java.util.HashMap" resultType= "java.util.HashMap">
+        SELECT * FROM USER WHERE id = #{id}
+    </select>
     
     <select id ="check_userid" parameterType="java.util.HashMap" resultType= "java.util.HashMap">
         SELECT COUNT(*)
